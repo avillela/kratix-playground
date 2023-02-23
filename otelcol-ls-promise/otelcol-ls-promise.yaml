@@ -5551,24 +5551,26 @@ spec:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     metadata:
-      name: otelcol.example.promise.syntasso.io
+      name: otelcol.example.promise
     spec:
-      group: example.promise.syntasso.io
-      scope: Namespaced
+      group: otelcol.example.promise
       names:
+        kind: otelcol
         plural: otelcol
         singular: otelcol
-        kind: otelcol
+      scope: Namespaced
       versions:
       - name: v1
-        served: true
-        storage: true
         schema:
           openAPIV3Schema:
-            type: object
             properties:
               spec:
-                type: object
                 properties:
                   name:
                     type: string
+                type: object
+            type: object
+        served: true
+        storage: true
+status: {}
+
