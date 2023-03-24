@@ -1,6 +1,6 @@
-apiVersion: promise.example.com/v1
+apiVersion: example.promise/v1
 kind: otelcol
 metadata:
   name: my-otelcol-promise-request
 spec:
-  name: my-amazing-otelcol
+  name: my-amazing-otelcol⏎
