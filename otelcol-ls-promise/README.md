@@ -94,8 +94,23 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 
    Need to add stuff here.
 
-6. Install the promies
+6. Install the promise
 
     ```bash
+    # Install dependent promise (Cert Manager)
+    kubectl create -f https://raw.githubusercontent.com/syntasso/kratix-marketplace/main/cert-manager/promise.yaml
+    
+    # Install OTel Collector Promise
+    kubectl apply -f otelcol-ls-promise/promise.yaml
+
+    # Check if promises are installed
+    kubectl get promises
+
+    # Check CRD installations
+    kubectl get crds --watch | grep otelcol
+
+    # Some other commands to see if stuff works
     kubectl get pods --namespace kratix-platform-system
+    kubectl get kustomizations -A -w
+    kubectl get certificates
     ```

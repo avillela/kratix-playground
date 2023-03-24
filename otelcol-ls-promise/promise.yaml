@@ -5553,7 +5553,7 @@ spec:
     metadata:
       name: otelcol.example.promise
     spec:
-      group: otelcol.example.promise
+      group: example.promise
       names:
         kind: otelcol
         plural: otelcol

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-go-server
+  namespace: application
+  labels:
+    app: otel-go-server-example
+    app.kubernetes.io/name: otel-go-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-go-server-example
+      app.kubernetes.io/name: otel-go-server
+  template:
+    metadata:
+      labels:
+        app: otel-go-server-example
+        app.kubernetes.io/name: otel-go-server
+    spec:
+      containers:
+      - name: otel-go-server-example
+        image: ghcr.io/avillela/otel-go-server:0.0.4@sha256:eeb149ccd2176883d53621295221805c8e3ded5de07e8295b1ef8f4bba114b9c
+        ports:
+        - containerPort: 9000
+          name: go-server-port
+        env:
+          - name: COLLECTOR_ENDPOINT
+            value: otel-collector-collector.opentelemetry.svc.cluster.local:4318
+            # value: otel-collector:4317
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-go-server-svc
+  namespace: application
+  labels:
+    app: otel-go-server-example
+    app.kubernetes.io/name: otel-go-server
+spec:
+  selector:
+    app.kubernetes.io/name: otel-go-server
+  type: LoadBalancer
+  ports:
+  - name: name-of-service-port
+    protocol: TCP
+    port: 9000
+    targetPort: go-server-port
