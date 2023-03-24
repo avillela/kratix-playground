@@ -5547,6 +5547,8 @@ spec:
         resources:
         - opentelemetrycollectors
       sideEffects: None
+  xaasRequestPipeline:
+  - ghcr.io/avillela/otelcol-request-pipeline:dev@sha256:8046720965298e14a5bb6e8dddc7da63bc8966b69f1f1c685e31903b96c7a8fd
   xaasCrd:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
