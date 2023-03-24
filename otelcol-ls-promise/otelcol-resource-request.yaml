@@ -1,5 +1,4 @@
 apiVersion: promise.example.com/v1
-# Must match up with what you have in xaasCrd.spec.names.kind
 kind: otelcol
 metadata:
   name: my-otelcol-promise-request

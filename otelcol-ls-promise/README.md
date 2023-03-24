@@ -92,7 +92,64 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 
 5. Define your pipeline
 
-   Need to add stuff here.
+   Kratix docs ref [here](https://kratix.io/docs/main/guides/writing-a-promise#pipeline-script)
+
+   ```bash
+   tee -a otelcol-ls-promise/request-pipeline-image/execute-pipeline.sh <<EOF
+     #!/bin/sh
+
+     set -x
+
+     #Get the name from the Promise Custom resource
+     instanceName=\$(yq eval '.spec.name' /input/object.yaml)
+
+     # Inject the name into the resources
+     find /tmp/transfer -type f -exec sed -i \\
+       -e "s/<tbr-name>/\${instanceName//\//\\/}/g" \\
+       {} \;
+
+     cp /tmp/transfer/* /output/
+   EOF
+
+   chmod +x otelcol-ls-promise/request-pipeline-image/execute-pipeline.sh
+   ```
+
+   Build and test the pipeline
+
+   ```bash
+   cd otelcol-ls-promise/request-pipeline-image
+   docker build -t otelcol-request-pipeline:dev .
+
+   cd ../..
+   mkdir otelcol-ls-promise/request-pipeline-image/{input,output}
+   ```
+
+   Create sample `object.yaml`
+
+   ```bash
+   tee -a otelcol-ls-promise/request-pipeline-image/input/object.yaml <<EOF
+      apiVersion: promise.example.com/v1
+      kind: otelcol
+      metadata:
+        name: my-otelcol-promise-request
+      spec:
+        name: my-amazing-otelcol
+   EOF
+   ```
+
+   Run container and examine the output
+
+   ```bash
+   cd otelcol-ls-promise/request-pipeline-image
+
+   docker run -v $PWD/input:/input -v $PWD/output:/output otelcol-request-pipeline:dev
+   ```
+
+   Push to Docker registry
+
+   ```bash
+   docker buildx build --push -t ghcr.io/avillela/otelcol-request-pipeline:dev --platform=linux/arm64,linux/amd64 .
+   ```
 
 6. Install the promise
 
@@ -103,14 +160,23 @@ This creates and installs an OTel Collector configured to send traces to [Lights
     # Install OTel Collector Promise
     kubectl apply -f otelcol-ls-promise/promise.yaml
 
-    # Check if promises are installed
+    # Make sure that promises are installed
     kubectl get promises
 
     # Check CRD installations
     kubectl get crds --watch | grep otelcol
 
-    # Some other commands to see if stuff works
+    # Some other commands to make sure stuff works
     kubectl get pods --namespace kratix-platform-system
     kubectl get kustomizations -A -w
-    kubectl get certificates
+    kubectl get certificates -A
+
+    # Kratix controller manager log (replace with pod name)
+    kubectl logs kratix-platform-controller-manager-68f59f8bb6-nqg2s -c manager -n kratix-platform-system -f
     ```
+
+7. Request the resource
+
+   ```bash
+   kubectl apply -f otelcol-resource-request.yaml
+   ```

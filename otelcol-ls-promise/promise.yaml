@@ -2,7 +2,7 @@ apiVersion: platform.kratix.io/v1alpha1
 kind: Promise
 metadata:
   creationTimestamp: null
-  name: otelcol-ls
+  name: otelcol
 spec:
   workerClusterResources:
   - apiVersion: v1
