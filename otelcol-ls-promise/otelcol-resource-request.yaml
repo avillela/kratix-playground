@@ -1,4 +1,6 @@
+# Must match value in xaasCrd.spec.group
 apiVersion: example.promise/v1
+# Must match value in xaasCrd.spec.names.kind
 kind: otelcol
 metadata:
   name: my-otelcol-promise-request

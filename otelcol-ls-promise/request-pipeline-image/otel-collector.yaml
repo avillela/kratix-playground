@@ -19,6 +19,10 @@ spec:
         endpoint: jaeger-all-in-one:14250
         tls:
           insecure: true
+      otlp/ls:
+        endpoint: ingest.lightstep.com:443
+        headers: 
+          "lightstep-access-token": "${LS_ACCESS_TOKEN}"
       logging:
         verbosity: detailed
     processors:
@@ -41,4 +45,4 @@ spec:
         traces:
           receivers: [otlp]
           processors: [batch, resource]
-          exporters: [logging, jaeger]
+          exporters: [logging, otlp/ls, jaeger]

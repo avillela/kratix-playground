@@ -171,12 +171,46 @@ This creates and installs an OTel Collector configured to send traces to [Lights
     kubectl get kustomizations -A -w
     kubectl get certificates -A
 
-    # Kratix controller manager log (replace with pod name)
-    kubectl logs kratix-platform-controller-manager-68f59f8bb6-nqg2s -c manager -n kratix-platform-system -f
+    # Kratix controller manager log
+    ./scripts/manager-logs.sh
     ```
 
 7. Request the resource
 
    ```bash
-   kubectl apply -f otelcol-resource-request.yaml
+   kubectl apply -f otelcol-ls-promise/otelcol-resource-request.yaml
    ```
+
+   Check flux status
+
+   ```bash
+   ./scripts/flux-status.sh
+   ```
+
+8. Verify
+
+   ```bash
+   # Port-forwarding
+   kubectl port-forward -n application svc/otel-go-server-svc 9000:9000
+   kubectl port-forward -n opentelemetry svc/jaeger-all-in-one-ui 16686:16686
+
+   # Run the app
+   curl http://localhost:9000
+
+   # Sample app logs
+   kubectl logs --selector=app=otel-go-server-example -n application --follow
+
+   # Collector logs
+   kubectl logs -l app=opentelemetry -n opentelemetry --follow
+
+   ```
+
+## Cleanup
+
+```bash
+kubectl delete ns application
+kubectl delete ns opentelemetry
+
+kubectl delete otelcol my-otelcol-promise-request
+kubectl delete promise otelcol
+```
