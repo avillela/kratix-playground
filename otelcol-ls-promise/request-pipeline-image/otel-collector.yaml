@@ -7,6 +7,12 @@ metadata:
     app: opentelemetry
     component: otel-collector
 spec:
+  env:
+    - name: LS_ACCESS_TOKEN
+      valueFrom:
+        secretKeyRef:
+          key: LS_ACCESS_TOKEN
+          name: ls-access-token-secret
   mode: deployment
   config: |
     receivers:

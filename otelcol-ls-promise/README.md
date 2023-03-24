@@ -151,7 +151,33 @@ This creates and installs an OTel Collector configured to send traces to [Lights
    docker buildx build --push -t ghcr.io/avillela/otelcol-request-pipeline:dev --platform=linux/arm64,linux/amd64 .
    ```
 
-6. Install the promise
+6. Create Collector secret for LS
+
+   ```bash
+   tee -a otelcol-ls-promise/request-pipeline-image/secret/ls-access-token-secret.yaml <<EOF
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ls-access-token-secret
+      namespace: opentelemetry
+    data:
+      LS_ACCESS_TOKEN: <base64-encoded-LS-access-token>
+    type: "Opaque"
+   EOF
+   ```
+
+   Replace `<base64-encoded-LS-access-token>` with your own [Lightstep Access Token]
+(https://docs.lightstep.com/docs/create-and-manage-access-tokens#create-an-access-token)
+
+   Be sure to Base64 encode it like this:
+
+   ```bash
+   echo <LS-access-token> | base64
+   ```
+
+   Or you can Base64-encode it through [this website](https://www.base64encode.org).
+
+7. Install the promise
 
     ```bash
     # Install dependent promise (Cert Manager)
@@ -175,10 +201,14 @@ This creates and installs an OTel Collector configured to send traces to [Lights
     ./scripts/manager-logs.sh
     ```
 
-7. Request the resource
+8. Request the resource
 
    ```bash
+   # Run the resource request
    kubectl apply -f otelcol-ls-promise/otelcol-resource-request.yaml
+
+   # Create the LS access token secret
+   kubectl apply -f otelcol-ls-promise/request-pipeline-image/secret/ls-access-token-secret.yaml
    ```
 
    Check flux status
@@ -187,7 +217,7 @@ This creates and installs an OTel Collector configured to send traces to [Lights
    ./scripts/flux-status.sh
    ```
 
-8. Verify
+9. Verify
 
    ```bash
    # Port-forwarding
