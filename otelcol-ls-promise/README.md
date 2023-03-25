@@ -237,10 +237,8 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 
 ## Cleanup
 
-```bash
-kubectl delete ns application
-kubectl delete ns opentelemetry
+This will delete all namespaces, resources, and promise request.
 
-kubectl delete otelcol my-otelcol-promise-request
+```bash
 kubectl delete promise otelcol
 ```
