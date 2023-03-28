@@ -1,8 +1,8 @@
 # Must match value in xaasCrd.spec.group
 apiVersion: example.promise/v1
 # Must match value in xaasCrd.spec.names.kind
-kind: otelcol
+kind: oteloperator
 metadata:
-  name: my-otelcol-promise-request
+  name: my-oteloperator-promise-request
 spec:
-  name: my-amazing-otelcol⏎
+  name: my-amazing-oteloperator

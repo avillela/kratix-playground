@@ -2,7 +2,7 @@ apiVersion: platform.kratix.io/v1alpha1
 kind: Promise
 metadata:
   creationTimestamp: null
-  name: otelcol
+  name: otelcol-ls
 spec:
   workerClusterResources:
   - apiVersion: v1
@@ -16,7 +16,7 @@ spec:
     kind: CustomResourceDefinition
     metadata:
       annotations:
-        controller-gen.kubebuilder.io/version: v0.9.2
+        controller-gen.kubebuilder.io/version: v0.11.3
       creationTimestamp: null
       labels:
         app.kubernetes.io/name: opentelemetry-operator
@@ -848,7 +848,8 @@ spec:
                     type: object
                   propagators:
                     description: Propagators defines inter-process context propagation
-                      configuration.
+                      configuration. Values in this list will be set in the OTEL_PROPAGATORS
+                      env var. Enum=tracecontext;baggage;b3;b3multi;jaeger;xray;ottrace;none
                     items:
                       description: Propagator represents the propagation type.
                       enum:
@@ -1014,11 +1015,13 @@ spec:
                       argument:
                         description: Argument defines sampler argument. The value
                           depends on the sampler type. For instance for parentbased_traceidratio
-                          sampler type it is a number in range [0..1] e.g. 0.25.
+                          sampler type it is a number in range [0..1] e.g. 0.25. The
+                          value will be set in the OTEL_TRACES_SAMPLER_ARG env var.
                         type: string
                       type:
-                        description: Type defines sampler type. The value can be for
-                          instance parentbased_always_on, parentbased_always_off,
+                        description: Type defines sampler type. The value will be
+                          set in the OTEL_TRACES_SAMPLER env var. The value can be
+                          for instance parentbased_always_on, parentbased_always_off,
                           parentbased_traceidratio...
                         enum:
                         - always_on
@@ -1045,7 +1048,8 @@ spec:
     metadata:
       annotations:
         cert-manager.io/inject-ca-from: opentelemetry-operator-system/opentelemetry-operator-serving-cert
-        controller-gen.kubebuilder.io/version: v0.9.2
+        controller-gen.kubebuilder.io/version: v0.11.3
+      creationTimestamp: null
       labels:
         app.kubernetes.io/name: opentelemetry-operator
       name: opentelemetrycollectors.opentelemetry.io
@@ -2501,9 +2505,13 @@ spec:
                       supplementalGroups:
                         description: A list of groups applied to the first process
                           run in each container, in addition to the container's primary
-                          GID.  If unspecified, no groups will be added to any container.
-                          Note that this field cannot be set when spec.os.name is
-                          windows.
+                          GID, the fsGroup (if specified), and group memberships defined
+                          in the container image for the uid of the container process.
+                          If unspecified, no additional groups are added to any container.
+                          Note that group memberships defined in the container image
+                          for the uid of the container process are still effective,
+                          even if they are not included in this list. Note that this
+                          field cannot be set when spec.os.name is windows.
                         items:
                           format: int64
                           type: integer
@@ -2645,6 +2653,27 @@ spec:
                   resources:
                     description: Resources to set on the OpenTelemetry Collector pods.
                     properties:
+                      claims:
+                        description: "Claims lists the names of resources, defined
+                          in spec.resourceClaims, that are used by this container.
+                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
+                          feature gate. \n This field is immutable."
+                        items:
+                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                          properties:
+                            name:
+                              description: Name must match the name of one entry in
+                                pod.spec.resourceClaims of the Pod where this field
+                                is used. It makes that resource available inside a
+                                container.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
                       limits:
                         additionalProperties:
                           anyOf:
@@ -3019,10 +3048,12 @@ spec:
                                 * An existing PVC (PersistentVolumeClaim) If the provisioner
                                 or an external controller can support the specified
                                 data source, it will create a new volume based on
-                                the contents of the specified data source. If the
-                                AnyVolumeDataSource feature gate is enabled, this
-                                field will always have the same contents as the DataSourceRef
-                                field.'
+                                the contents of the specified data source. When the
+                                AnyVolumeDataSource feature gate is enabled, dataSource
+                                contents will be copied to dataSourceRef, and dataSourceRef
+                                contents will be copied to dataSource when dataSourceRef.namespace
+                                is not specified. If the namespace is specified, then
+                                dataSourceRef will not be copied to dataSource.'
                               properties:
                                 apiGroup:
                                   description: APIGroup is the group for the resource
@@ -3046,25 +3077,32 @@ spec:
                             dataSourceRef:
                               description: 'dataSourceRef specifies the object from
                                 which to populate the volume with data, if a non-empty
-                                volume is desired. This may be any local object from
-                                a non-empty API group (non core object) or a PersistentVolumeClaim
+                                volume is desired. This may be any object from a non-empty
+                                API group (non core object) or a PersistentVolumeClaim
                                 object. When this field is specified, volume binding
                                 will only succeed if the type of the specified object
                                 matches some installed volume populator or dynamic
                                 provisioner. This field will replace the functionality
-                                of the DataSource field and as such if both fields
+                                of the dataSource field and as such if both fields
                                 are non-empty, they must have the same value. For
-                                backwards compatibility, both fields (DataSource and
-                                DataSourceRef) will be set to the same value automatically
-                                if one of them is empty and the other is non-empty.
-                                There are two important differences between DataSource
-                                and DataSourceRef: * While DataSource only allows
-                                two specific types of objects, DataSourceRef allows
+                                backwards compatibility, when namespace isn''t specified
+                                in dataSourceRef, both fields (dataSource and dataSourceRef)
+                                will be set to the same value automatically if one
+                                of them is empty and the other is non-empty. When
+                                namespace is specified in dataSourceRef, dataSource
+                                isn''t set to the same value and must be empty. There
+                                are three important differences between dataSource
+                                and dataSourceRef: * While dataSource only allows
+                                two specific types of objects, dataSourceRef allows
                                 any non-core object, as well as PersistentVolumeClaim
-                                objects. * While DataSource ignores disallowed values
-                                (dropping them), DataSourceRef preserves all values,
+                                objects. * While dataSource ignores disallowed values
+                                (dropping them), dataSourceRef preserves all values,
                                 and generates an error if a disallowed value is specified.
-                                (Beta) Using this field requires the AnyVolumeDataSource
+                                * While dataSource only allows local objects, dataSourceRef
+                                allows objects in any namespaces. (Beta) Using this
+                                field requires the AnyVolumeDataSource feature gate
+                                to be enabled. (Alpha) Using the namespace field of
+                                dataSourceRef requires the CrossNamespaceVolumeDataSource
                                 feature gate to be enabled.'
                               properties:
                                 apiGroup:
@@ -3081,11 +3119,20 @@ spec:
                                   description: Name is the name of resource being
                                     referenced
                                   type: string
+                                namespace:
+                                  description: Namespace is the namespace of resource
+                                    being referenced Note that when a namespace is
+                                    specified, a gateway.networking.k8s.io/ReferenceGrant
+                                    object is required in the referent namespace to
+                                    allow that namespace's owner to accept the reference.
+                                    See the ReferenceGrant documentation for details.
+                                    (Alpha) This field requires the CrossNamespaceVolumeDataSource
+                                    feature gate to be enabled.
+                                  type: string
                               required:
                               - kind
                               - name
                               type: object
-                              x-kubernetes-map-type: atomic
                             resources:
                               description: 'resources represents the minimum resources
                                 the volume should have. If RecoverVolumeExpansionFailure
@@ -3094,6 +3141,29 @@ spec:
                                 must still be higher than capacity recorded in the
                                 status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                               properties:
+                                claims:
+                                  description: "Claims lists the names of resources,
+                                    defined in spec.resourceClaims, that are used
+                                    by this container. \n This is an alpha field and
+                                    requires enabling the DynamicResourceAllocation
+                                    feature gate. \n This field is immutable."
+                                  items:
+                                    description: ResourceClaim references one entry
+                                      in PodSpec.ResourceClaims.
+                                    properties:
+                                      name:
+                                        description: Name must match the name of one
+                                          entry in pod.spec.resourceClaims of the
+                                          Pod where this field is used. It makes that
+                                          resource available inside a container.
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
+                                  x-kubernetes-list-map-keys:
+                                  - name
+                                  x-kubernetes-list-type: map
                                 limits:
                                   additionalProperties:
                                     anyOf:
@@ -3814,10 +3884,13 @@ spec:
                                         If the provisioner or an external controller
                                         can support the specified data source, it
                                         will create a new volume based on the contents
-                                        of the specified data source. If the AnyVolumeDataSource
-                                        feature gate is enabled, this field will always
-                                        have the same contents as the DataSourceRef
-                                        field.'
+                                        of the specified data source. When the AnyVolumeDataSource
+                                        feature gate is enabled, dataSource contents
+                                        will be copied to dataSourceRef, and dataSourceRef
+                                        contents will be copied to dataSource when
+                                        dataSourceRef.namespace is not specified.
+                                        If the namespace is specified, then dataSourceRef
+                                        will not be copied to dataSource.'
                                       properties:
                                         apiGroup:
                                           description: APIGroup is the group for the
@@ -3843,29 +3916,37 @@ spec:
                                       description: 'dataSourceRef specifies the object
                                         from which to populate the volume with data,
                                         if a non-empty volume is desired. This may
-                                        be any local object from a non-empty API group
-                                        (non core object) or a PersistentVolumeClaim
-                                        object. When this field is specified, volume
-                                        binding will only succeed if the type of the
-                                        specified object matches some installed volume
-                                        populator or dynamic provisioner. This field
-                                        will replace the functionality of the DataSource
-                                        field and as such if both fields are non-empty,
+                                        be any object from a non-empty API group (non
+                                        core object) or a PersistentVolumeClaim object.
+                                        When this field is specified, volume binding
+                                        will only succeed if the type of the specified
+                                        object matches some installed volume populator
+                                        or dynamic provisioner. This field will replace
+                                        the functionality of the dataSource field
+                                        and as such if both fields are non-empty,
                                         they must have the same value. For backwards
-                                        compatibility, both fields (DataSource and
-                                        DataSourceRef) will be set to the same value
-                                        automatically if one of them is empty and
-                                        the other is non-empty. There are two important
-                                        differences between DataSource and DataSourceRef:
-                                        * While DataSource only allows two specific
-                                        types of objects, DataSourceRef allows any
-                                        non-core object, as well as PersistentVolumeClaim
-                                        objects. * While DataSource ignores disallowed
-                                        values (dropping them), DataSourceRef preserves
-                                        all values, and generates an error if a disallowed
-                                        value is specified. (Beta) Using this field
-                                        requires the AnyVolumeDataSource feature gate
-                                        to be enabled.'
+                                        compatibility, when namespace isn''t specified
+                                        in dataSourceRef, both fields (dataSource
+                                        and dataSourceRef) will be set to the same
+                                        value automatically if one of them is empty
+                                        and the other is non-empty. When namespace
+                                        is specified in dataSourceRef, dataSource
+                                        isn''t set to the same value and must be empty.
+                                        There are three important differences between
+                                        dataSource and dataSourceRef: * While dataSource
+                                        only allows two specific types of objects,
+                                        dataSourceRef allows any non-core object,
+                                        as well as PersistentVolumeClaim objects.
+                                        * While dataSource ignores disallowed values
+                                        (dropping them), dataSourceRef preserves all
+                                        values, and generates an error if a disallowed
+                                        value is specified. * While dataSource only
+                                        allows local objects, dataSourceRef allows
+                                        objects in any namespaces. (Beta) Using this
+                                        field requires the AnyVolumeDataSource feature
+                                        gate to be enabled. (Alpha) Using the namespace
+                                        field of dataSourceRef requires the CrossNamespaceVolumeDataSource
+                                        feature gate to be enabled.'
                                       properties:
                                         apiGroup:
                                           description: APIGroup is the group for the
@@ -3882,11 +3963,21 @@ spec:
                                           description: Name is the name of resource
                                             being referenced
                                           type: string
+                                        namespace:
+                                          description: Namespace is the namespace
+                                            of resource being referenced Note that
+                                            when a namespace is specified, a gateway.networking.k8s.io/ReferenceGrant
+                                            object is required in the referent namespace
+                                            to allow that namespace's owner to accept
+                                            the reference. See the ReferenceGrant
+                                            documentation for details. (Alpha) This
+                                            field requires the CrossNamespaceVolumeDataSource
+                                            feature gate to be enabled.
+                                          type: string
                                       required:
                                       - kind
                                       - name
                                       type: object
-                                      x-kubernetes-map-type: atomic
                                     resources:
                                       description: 'resources represents the minimum
                                         resources the volume should have. If RecoverVolumeExpansionFailure
@@ -3896,6 +3987,31 @@ spec:
                                         capacity recorded in the status field of the
                                         claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                       properties:
+                                        claims:
+                                          description: "Claims lists the names of
+                                            resources, defined in spec.resourceClaims,
+                                            that are used by this container. \n This
+                                            is an alpha field and requires enabling
+                                            the DynamicResourceAllocation feature
+                                            gate. \n This field is immutable."
+                                          items:
+                                            description: ResourceClaim references
+                                              one entry in PodSpec.ResourceClaims.
+                                            properties:
+                                              name:
+                                                description: Name must match the name
+                                                  of one entry in pod.spec.resourceClaims
+                                                  of the Pod where this field is used.
+                                                  It makes that resource available
+                                                  inside a container.
+                                                type: string
+                                            required:
+                                            - name
+                                            type: object
+                                          type: array
+                                          x-kubernetes-list-map-keys:
+                                          - name
+                                          x-kubernetes-list-type: map
                                         limits:
                                           additionalProperties:
                                             anyOf:
@@ -5313,7 +5429,7 @@ spec:
             - --enable-leader-election
             - --zap-log-level=info
             - --zap-time-encoding=rfc3339nano
-            image: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.70.0
+            image: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.73.0
             livenessProbe:
               httpGet:
                 path: /healthz
@@ -5396,6 +5512,7 @@ spec:
     metadata:
       annotations:
         cert-manager.io/inject-ca-from: opentelemetry-operator-system/opentelemetry-operator-serving-cert
+      creationTimestamp: null
       labels:
         app.kubernetes.io/name: opentelemetry-operator
       name: opentelemetry-operator-mutating-webhook-configuration
@@ -5465,6 +5582,7 @@ spec:
     metadata:
       annotations:
         cert-manager.io/inject-ca-from: opentelemetry-operator-system/opentelemetry-operator-serving-cert
+      creationTimestamp: null
       labels:
         app.kubernetes.io/name: opentelemetry-operator
       name: opentelemetry-operator-validating-webhook-configuration
@@ -5548,18 +5666,18 @@ spec:
         - opentelemetrycollectors
       sideEffects: None
   xaasRequestPipeline:
-  - ghcr.io/avillela/otelcol-request-pipeline:dev@sha256:524b757ab7d9a50124403e31cc0ec25a51b6fcb0e0d116ef0e21427a2b42d9ab
+    - ghcr.io/avillela/oteloperator-request-pipeline:dev@sha256:6b098755c5a71f262458763c311874dc4a9b0430de124100ccacd2dabac725ed
   xaasCrd:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     metadata:
-      name: otelcol.example.promise
+      name: oteloperators.example.promise
     spec:
       group: example.promise
       names:
-        kind: otelcol
-        plural: otelcol
-        singular: otelcol
+        kind: oteloperator
+        plural: oteloperators
+        singular: oteloperator
       scope: Namespaced
       versions:
       - name: v1

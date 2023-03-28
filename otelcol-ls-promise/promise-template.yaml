@@ -9,14 +9,14 @@ spec:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     metadata:
-      name: otelcol.example.promise
+      name: oteloperators.example.promise
     spec:
-      group: otelcol.example.promise
+      group: example.promise
       scope: Namespaced
       names:
-        plural: otelcol
-        singular: otelcol
-        kind: otelcol
+        plural: oteloperators
+        singular: oteloperator
+        kind: oteloperator
       versions:
       - name: v1
         served: true
