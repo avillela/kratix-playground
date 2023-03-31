@@ -2,4 +2,4 @@
 
 Creating Kratix promises. This is a work-in-progress.
 
-* [OTel Collector Configured for Lightstep Promise](otelcol-ls-promise/README.md)
+* [OTel Collector Configured for Lightstep Promise](oteloperator-ls-promise/README.md)

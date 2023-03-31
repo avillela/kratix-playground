@@ -1,0 +1,8 @@
+# Must match value in xaasCrd.spec.group
+apiVersion: example.promise/v1
+# Must match value in xaasCrd.spec.names.kind
+kind: oteloperator
+metadata:
+  name: my-oteloperator-promise-request
+spec:
+  name: my-amazing-oteloperator

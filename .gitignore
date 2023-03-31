@@ -1,5 +1,5 @@
 .DS_Store
-worker-resource-builder
+worker-resource-builder*
 output
 input
 *secret*
