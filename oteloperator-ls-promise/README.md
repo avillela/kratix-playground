@@ -233,5 +233,5 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 This will delete all namespaces, resources, and promise request.
 
 ```bash
-kubectl delete promise otelcol
+kubectl delete promise oteloperator-ls
 ```
