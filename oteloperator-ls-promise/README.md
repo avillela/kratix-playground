@@ -1,6 +1,6 @@
-# OTel Collector for Lightstep Promise
+# OTel Operator for Lightstep and Jaeger
 
-This creates and installs an OTel Collector configured to send traces to [Lightstep Observability](https://app.lightstep.com).
+This creates and installs an OTel Operator configured to send traces to [Jaeger](https://jaegertracing.io) and [Lightstep Observability](https://app.lightstep.com). It also deploys a sample Go service so that you can test your connectivity.
 
 1. Install Kratix
 
