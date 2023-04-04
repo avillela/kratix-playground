@@ -1,5 +1,6 @@
 # Kratix Playground
 
-Creating Kratix promises. This is a work-in-progress.
+My registry of Kratix promises.
 
-* [OTel Collector Configured for Lightstep Promise](oteloperator-ls-promise/README.md)
+* [OTel Operator configured to send traces to Jaeger](oteloperator-promise/README.md)
+* [OTel Operator Promise configured to send traces to Lightstep and Jaeger](oteloperator-ls-promise/README.md)

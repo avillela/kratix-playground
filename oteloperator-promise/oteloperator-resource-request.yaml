@@ -1,0 +1,6 @@
+apiVersion: example.promise/v1
+kind: oteloperator
+metadata:
+  name: my-oteloperator-promise-request
+spec:
+  name: my-amazing-oteloperator

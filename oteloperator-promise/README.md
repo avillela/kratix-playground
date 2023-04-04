@@ -20,14 +20,14 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 
     ```bash
     # Scaffolding
-    mkdir -p oteloperator-promise/request-pipeline-image/{input,output,secret}
+    mkdir -p oteloperator-promise/request-pipeline-image/{input,output}
 
     # Create template
-    tee -a oteloperator-ls-promise/promise-template.yaml <<EOF
+    tee -a oteloperator-promise/promise-template.yaml <<EOF
     apiVersion: platform.kratix.io/v1alpha1
     kind: Promise
     metadata:
-        name: oteloperator-ls
+        name: oteloperator
     spec:
         workerClusterResources:
         xaasRequestPipeline:
@@ -41,7 +41,7 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 
     ```bash
     # Append CRD definition to end of file
-    tee -a oteloperator-ls-promise/promise-template.yaml <<EOF
+    tee -a oteloperator-promise/promise-template.yaml <<EOF
         apiVersion: apiextensions.k8s.io/v1
         kind: CustomResourceDefinition
         metadata:
@@ -74,7 +74,7 @@ This creates and installs an OTel Collector configured to send traces to [Lights
     First, download the OTel Collector CRD
 
     ```bash
-    curl -L https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.73.0/opentelemetry-operator.yaml -o oteloperator-ls-promise/resources/opentelemetry-operator.yaml
+    curl -L https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.73.0/opentelemetry-operator.yaml -o oteloperator-promise/resources/opentelemetry-operator.yaml
     ```
 
     Next, download and run the [`worker-resource-builder` tool](https://kratix.io/docs/main/guides/writing-a-promise#worker-cluster-resources). This tool grabs the CRD contents and plunks them into the `workerClusterResources` section of the promise YAML.
@@ -87,8 +87,8 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 
     # Run the resource builder tool
     ./worker-resource-builder \
-    -k8s-resources-directory ./oteloperator-ls-promise/resources \
-    -promise ./oteloperator-ls-promise/promise-template.yaml > ./oteloperator-ls-promise/promise.yaml
+    -k8s-resources-directory ./oteloperator-promise/resources \
+    -promise ./oteloperator-promise/promise-template.yaml > ./oteloperator-promise/promise.yaml
     ```
 
 5. Define your pipeline
@@ -96,7 +96,7 @@ This creates and installs an OTel Collector configured to send traces to [Lights
    Kratix docs ref [here](https://kratix.io/docs/main/guides/writing-a-promise#pipeline-script)
 
    ```bash
-   tee -a oteloperator-ls-promise/request-pipeline-image/execute-pipeline.sh <<EOF
+   tee -a oteloperator-promise/request-pipeline-image/execute-pipeline.sh <<EOF
      #!/bin/sh
 
      set -x
@@ -104,19 +104,19 @@ This creates and installs an OTel Collector configured to send traces to [Lights
      cp /tmp/transfer/* /output/
    EOF
 
-   chmod +x oteloperator-ls-promise/request-pipeline-image/execute-pipeline.sh
+   chmod +x oteloperator-promise/request-pipeline-image/execute-pipeline.sh
    ```
 
    Build and test the pipeline
 
    ```bash
-   docker build -t oteloperator-request-pipeline:dev ./oteloperator-ls-promise/request-pipeline-image/
+   docker build -t oteloperator-request-pipeline:dev ./oteloperator-promise/request-pipeline-image/
    ```
 
    Create sample `object.yaml`
 
    ```bash
-   tee -a oteloperator-ls-promise/request-pipeline-image/input/object.yaml <<EOF
+   tee -a oteloperator-promise/request-pipeline-image/input/object.yaml <<EOF
       apiVersion: promise.example.com/v1
       kind: otelcol
       metadata:
@@ -129,49 +129,23 @@ This creates and installs an OTel Collector configured to send traces to [Lights
    Run container and examine the output
 
    ```bash
-   docker run -v $PWD/oteloperator-ls-promise/request-pipeline-image/input:/input -v $PWD/oteloperator-ls-promise/request-pipeline-image/output:/output oteloperator-request-pipeline:dev
+   docker run -v $PWD/oteloperator-promise/request-pipeline-image/input:/input -v $PWD/oteloperator-promise/request-pipeline-image/output:/output oteloperator-request-pipeline:dev
    ```
 
    Push to Docker registry
 
    ```bash
-   docker buildx build --push -t ghcr.io/$GH_USER/oteloperator-request-pipeline:dev --platform=linux/arm64,linux/amd64 ./oteloperator-ls-promise/request-pipeline-image/
+   docker buildx build --push -t ghcr.io/$GH_USER/oteloperator-request-pipeline:dev --platform=linux/arm64,linux/amd64 ./oteloperator-promise/request-pipeline-image/
    ```
 
-6. Create Collector secret for LS
-
-   ```bash
-   tee -a oteloperator-ls-promise/request-pipeline-image/secret/ls-access-token-secret.yaml <<EOF
-    apiVersion: v1
-    kind: Secret
-    metadata:
-      name: ls-access-token-secret
-      namespace: opentelemetry
-    data:
-      LS_ACCESS_TOKEN: <base64-encoded-LS-access-token>
-    type: "Opaque"
-   EOF
-   ```
-
-   Replace `<base64-encoded-LS-access-token>` with your own [Lightstep Access Token]
-(https://docs.lightstep.com/docs/create-and-manage-access-tokens#create-an-access-token)
-
-   Be sure to Base64 encode it like this:
-
-   ```bash
-   echo <LS-access-token> | base64
-   ```
-
-   Or you can Base64-encode it through [this website](https://www.base64encode.org).
-
-7. Install the promise
+6. Install the promise
 
     ```bash
     # Install dependent promise (Cert Manager)
     kubectl create -f https://raw.githubusercontent.com/syntasso/kratix-marketplace/main/cert-manager/promise.yaml
     
     # Install OTel Collector Promise
-    kubectl apply -f oteloperator-ls-promise/promise.yaml
+    kubectl apply -f oteloperator-promise/promise.yaml
 
     # Make sure that promises are installed
     kubectl get promises
@@ -188,14 +162,11 @@ This creates and installs an OTel Collector configured to send traces to [Lights
     ./scripts/manager-logs.sh
     ```
 
-8. Request the resource
+7. Request the resource
 
    ```bash
    # Run the resource request
-   kubectl apply -f oteloperator-ls-promise/oteloperator-resource-request.yaml
-
-   # Create the LS access token secret
-   kubectl apply -f oteloperator-ls-promise/request-pipeline-image/secret/ls-access-token-secret.yaml
+   kubectl apply -f oteloperator-promise/oteloperator-resource-request.yaml
    ```
 
    Check flux status
@@ -204,7 +175,7 @@ This creates and installs an OTel Collector configured to send traces to [Lights
    ./scripts/flux-status.sh
    ```
 
-9. Verify
+8. Verify
 
    ```bash
    # Port-forwarding
@@ -221,9 +192,9 @@ This creates and installs an OTel Collector configured to send traces to [Lights
    kubectl logs -l app=opentelemetry -n opentelemetry --follow
 
    # Promise request logs
-   kubectl logs --selector=kratix-promise-id=oteloperator-ls-default --container status-writer
+   kubectl logs --selector=kratix-promise-id=oteloperator-default --container status-writer
 
-   kubectl logs --selector=kratix-promise-id=oteloperator-ls-default --container xaas-request-pipeline-stage-1
+   kubectl logs --selector=kratix-promise-id=oteloperator-default --container xaas-request-pipeline-stage-1
    ```
 
 ## Cleanup
@@ -231,5 +202,5 @@ This creates and installs an OTel Collector configured to send traces to [Lights
 This will delete all namespaces, resources, and promise request.
 
 ```bash
-kubectl delete promise oteloperator-ls
+kubectl delete promise otelcol
 ```
