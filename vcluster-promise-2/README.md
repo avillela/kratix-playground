@@ -4,34 +4,34 @@ In this version of the [VCluster](https://www.vcluster.com/)  Promise, the Promi
 
 1. Get VCluster manifest
 
-Grab the VCluster manifest from the Helm chart
+    Grab the VCluster manifest from the Helm chart
 
-```bash
-# Helm install
-helm repo add loft-sh https://charts.loft.sh
-helm repo update
+    ```bash
+    # Helm install
+    helm repo add loft-sh https://charts.loft.sh
+    helm repo update
 
-helm template my-vcluster-demo loft-sh/vcluster-k8s -n vcluster-namespace > vcluster-promise-2/request-pipeline-image/vcluster.yaml
-```
+    helm template my-vcluster-demo loft-sh/vcluster-k8s -n vcluster-namespace > vcluster-promise-2/request-pipeline-image/vcluster.yaml
+    ```
 
 2. Pipeline setup
 
-Create the pipeline. Start by creating and building the Pipeline image. This pipeline will create a Jaeger instance in your vcluster
+    Create the pipeline. Start by creating and building the Pipeline image. This pipeline will install VCluster.
 
-```bash
-# Local build
-docker build -t vcluster-request-pipeline:dev ./vcluster-promise-2/request-pipeline-image/
+    ```bash
+    # Local build
+    docker build -t vcluster-request-pipeline:dev ./vcluster-promise-2/request-pipeline-image/
 
-# Local run
-docker run -v $PWD/vcluster-promise-2/request-pipeline-image/input:/input -v $PWD/vcluster-promise-2/request-pipeline-image/output:/output vcluster-request-pipeline:dev
+    # Local run
+    docker run -v $PWD/vcluster-promise-2/request-pipeline-image/input:/input -v $PWD/vcluster-promise-2/request-pipeline-image/output:/output vcluster-request-pipeline:dev
 
-# Push to GHCR
-export GH_TOKEN="<your_gh_pat>"
-export GH_USER="<your_gh_username>"
-export IMAGE="vcluster-request-pipeline:dev"
+    # Push to GHCR
+    export GH_TOKEN="<your_gh_pat>"
+    export GH_USER="<your_gh_username>"
+    export IMAGE="vcluster-request-pipeline:dev"
 
-docker buildx build --push -t ghcr.io/$GH_USER/$IMAGE --platform=linux/arm64,linux/amd64 ./vcluster-promise-2/request-pipeline-image/
-```
+    docker buildx build --push -t ghcr.io/$GH_USER/$IMAGE --platform=linux/arm64,linux/amd64 ./vcluster-promise-2/request-pipeline-image/
+    ```
 
 3. Install the Promise
 

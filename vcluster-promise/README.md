@@ -15,26 +15,7 @@ In this version of the [VCluster](https://www.vcluster.com/) Promise, the Promis
     helm template my-vcluster-demo loft-sh/vcluster-k8s -n vcluster-namespace > vcluster-promise/resources/vcluster.yaml
     ```
 
-2. Pipeline setup
-
-    Create the pipeline. Start by creating and building the Pipeline image. This pipeline will create a Jaeger instance in your vcluster
-
-    ```bash
-    # Local build
-    docker build -t vcluster-request-pipeline:dev ./vcluster-promise/request-pipeline-image/
-
-    # Local run
-    docker run -v $PWD/vcluster-promise/request-pipeline-image/input:/input -v $PWD/vcluster-promise/request-pipeline-image/output:/output vcluster-request-pipeline:dev
-
-    # Push to GHCR
-    export GH_TOKEN="<your_gh_pat>"
-    export GH_USER="<your_gh_username>"
-    export IMAGE="vcluster-request-pipeline:dev"
-
-    docker buildx build --push -t ghcr.io/$GH_USER/$IMAGE --platform=linux/arm64,linux/amd64 ./vcluster-promise/request-pipeline-image/
-    ```
-
-3. Install the Promise
+2. Install the Promise
 
     ```bash
     kubectl apply -f vcluster-promise/promise.yaml
