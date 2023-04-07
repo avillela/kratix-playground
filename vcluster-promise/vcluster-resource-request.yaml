@@ -1,0 +1,6 @@
+apiVersion: example.promise/v1
+kind: vcluster
+metadata:
+  name: my-vcluster-promise-request
+spec:
+  name: my-amazing-vcluster

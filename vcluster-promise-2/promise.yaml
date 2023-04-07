@@ -1,0 +1,42 @@
+apiVersion: platform.kratix.io/v1alpha1
+kind: Promise
+metadata:
+  creationTimestamp: null
+  name: vcluster-2
+spec:
+  workerClusterResources:
+  - apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: vcluster-promise-ns
+  xaasRequestPipeline:
+  # - ghcr.io/avillela/vcluster-request-pipeline:dev@sha256:9cc5bd9b4c6610c695e75f95d73fe6b9875a74345cdcd8657e9879f209f7fb39
+  # - ghcr.io/avillela/vcluster-request-pipeline:dev@sha256:80ab2771e25ad0add133cd5994782e083b171b583f02c2181b5e77d6e26edbe9
+  - ghcr.io/avillela/vcluster-request-pipeline:dev@sha256:76bbc46ba79c26bf7dc2abdf771cca4b9b538813c6f74f8469c4ad10e387f345
+  xaasCrd:
+    apiVersion: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    metadata:
+      name: vclusters.example.promise
+    spec:
+      group: example.promise
+      names:
+        kind: vcluster
+        plural: vclusters
+        singular: vcluster
+      scope: Namespaced
+      versions:
+      - name: v1
+        schema:
+          openAPIV3Schema:
+            properties:
+              spec:
+                properties:
+                  name:
+                    type: string
+                type: object
+            type: object
+        served: true
+        storage: true
+status: {}
+
