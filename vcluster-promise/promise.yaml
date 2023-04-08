@@ -2,7 +2,7 @@ apiVersion: platform.kratix.io/v1alpha1
 kind: Promise
 metadata:
   creationTimestamp: null
-  name: vcluster-1
+  name: vcluster
 spec:
   workerClusterResources:
   - apiVersion: v1
@@ -912,7 +912,8 @@ spec:
           - emptyDir: {}
             name: cert-storage
   xaasRequestPipeline:
-  # - ghcr.io/avillela/vcluster-request-pipeline:dev@sha256:9cc5bd9b4c6610c695e75f95d73fe6b9875a74345cdcd8657e9879f209f7fb39
+  # - ghcr.io/avillela/vcluster-pipeline:dev@sha256:9058958b4a351c3113d5f3790a735f2c8b4e919a29b82b8235d8f465023b3466
+  - ghcr.io/avillela/vcluster-pipeline:dev@sha256:3d78bcfcd4f123466e1b90f7a0b5cf6f39b10f3092c0aa6e9953f7bfa3e9499a
   xaasCrd:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition

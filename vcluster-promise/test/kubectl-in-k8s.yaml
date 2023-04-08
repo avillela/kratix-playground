@@ -1,0 +1,50 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: testing-stuff
+  namespace: my-namespace
+spec:
+  template:
+    metadata:
+      name: testing-stuff
+    spec:
+      serviceAccountName: internal-kubectl
+      containers:
+      - name: tester
+        image: bitnami/kubectl:1.25
+        command:
+         - "bin/bash"
+         - "-c"
+         - "kubectl get pods -n my-namespace"
+      restartPolicy: Never 
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: internal-kubectl  
+  namespace: my-namespace   
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: modify-pods
+  namespace: my-namespace
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]      
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-pods-to-sa
+  namespace: my-namespace
+subjects:
+  - kind: ServiceAccount
+    name: internal-kubectl
+roleRef:
+  kind: Role
+  name: modify-pods
+  apiGroup: rbac.authorization.k8s.io
