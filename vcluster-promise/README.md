@@ -70,6 +70,12 @@ kubectl apply --context $PLATFORM -f vcluster-promise/vcluster-resource-request.
 # Logs
 kubectl --context $PLATFORM logs -n kratix-platform-system deployment/kratix-platform-controller-manager --container manager -f
 
+# Resource request logs
+kubectl --context $PLATFORM logs --selector=kratix-promise-id=vcluster-default --container xaas-request-pipeline-stage-0
+
+# Delete resource request
+kubectl --context $PLATFORM delete vcluster my-vcluster-promise-request
+
 vcluster --context $WORKER connect my-vcluster-demo -n vcluster-namespace
 kubectl --context $VCLUSTER apply -f vcluster-promise/test/namespaces.yaml
 kubectl --context $VCLUSTER apply -f vcluster-promise/test/jaeger.yaml

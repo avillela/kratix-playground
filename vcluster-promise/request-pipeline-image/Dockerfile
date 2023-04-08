@@ -16,6 +16,7 @@ RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/dow
 
 COPY *.yaml ./
 ADD vcluster-setup.sh vcluster-setup.sh
+RUN pwd
 
 CMD [ "sh", "-c", "./vcluster-setup.sh"]
 # ENTRYPOINT []
