@@ -1,0 +1,24 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vcluster-default-promise-pipeline-role
+  # namespace: default
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]      
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vcluster-default-promise-pipeline-role-to-sa
+  # namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: vcluster-default-promise-pipeline
+    namespace: opentelemetry
+roleRef:
+  kind: ClusterRole
+  name: vcluster-default-promise-pipeline-role
+  apiGroup: rbac.authorization.k8s.io

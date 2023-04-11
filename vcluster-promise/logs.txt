@@ -1,0 +1,58 @@
+** Apply k8s permissions   
+** HELLO vcluster
+vcluster root command
+
+Usage:
+  vcluster [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  connect     Connect to a virtual cluster
+  create      Create a new virtual cluster
+  delete      Deletes a virtual cluster
+  disconnect  Disconnects from a virtual cluster
+  get         Gets cluster related information
+  help        Help about any command
+  list        Lists all virtual clusters
+  pause       Pauses a virtual cluster
+  resume      Resumes a virtual cluster
+  upgrade     Upgrade the vcluster CLI to the newest version
+  version     Print the version number of vcluster
+Flags:                                                                                                                                     
+      --context string     The kubernetes config context to use                                                                            
+      --debug              Prints the stack trace if an error occurs                                                                       
+  -h, --help               help for vcluster                                                                                               
+  -n, --namespace string   The kubernetes namespace to use                                                                                 
+  -s, --silent             Run in silent mode and prevents any vcluster log output except panics & fatals                                  
+  -v, --version            version for vcluster  
+
+Use "vcluster [command] --help" for more information about a command.                                                                      
+fatal  find vcluster: statefulsets.apps is forbidden: User "system:serviceaccount:default:vcluster-default-promise-pipeline" cannot list re
+source "statefulsets" in API group "apps" in the namespace "default"                                                                       
+
+** HELLO kubectl
+Error from server (Forbidden): pods is forbidden: User "system:serviceaccount:default:vcluster-default-promise-pipeline" cannot list resource "pods" in API group "" in the namespace "default"                                                                                       
+CURRENT   NAME   CLUSTER   AUTHINFO   NAMESPACE                                                                                            
+** kubectl apply
+
+Error from server (Forbidden): error when retrieving current configuration of:
+
+Resource: "/v1, Resource=namespaces", GroupVersionKind: "/v1, Kind=Namespace"
+Name: "opentelemetry", Namespace: ""
+from server for: "namespaces.yaml": namespaces "opentelemetry" is forbidden: User "system:serviceaccount:default:vcluster-default-promise-pipeline" cannot get resource "namespaces" in API group "" in the namespace "opentelemetry"
+Error from server (Forbidden): error when retrieving current configuration of:
+Resource: "/v1, Resource=services", GroupVersionKind: "/v1, Kind=Service"
+Name: "jaeger-all-in-one", Namespace: "opentelemetry"
+from server for: "jaeger.yaml": services "jaeger-all-in-one" is forbidden: User "system:serviceaccount:default:vcluster-default-promise-pip
+eline" cannot get resource "services" in API group "" in the namespace "opentelemetry"
+Error from server (Forbidden): error when retrieving current configuration of:
+Resource: "/v1, Resource=services", GroupVersionKind: "/v1, Kind=Service"
+Name: "jaeger-all-in-one-ui", Namespace: "opentelemetry"
+from server for: "jaeger.yaml": services "jaeger-all-in-one-ui" is forbidden: User "system:serviceaccount:default:vcluster-default-promise-
+pipeline" cannot get resource "services" in API group "" in the namespace "opentelemetry"
+Error from server (Forbidden): error when retrieving current configuration of:
+Resource: "apps/v1, Resource=deployments", GroupVersionKind: "apps/v1, Kind=Deployment"
+Name: "jaeger-all-in-one", Namespace: "opentelemetry"
+from server for: "jaeger.yaml": deployments.apps "jaeger-all-in-one" is forbidden: User "system:serviceaccount:default:vcluster-default-pro 
+mise-pipeline" cannot get resource "deployments" in API group "apps" in the namespace "opentelemetry"
+Stream closed EOF for default/request-pipeline-vcluster-default-04383 (xaas-request-pipeline-stage-0)

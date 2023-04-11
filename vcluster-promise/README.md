@@ -112,3 +112,13 @@ docker run -it --rm vcluster-pipeline:dev /bin/bash
 docker buildx build --push -t ghcr.io/$GH_USER/vcluster-pipeline:dev --platform=linux/arm64,linux/amd64 ./vcluster-promise/request-pipeline-image/
   
 ```
+
+## Debug crap
+
+```bash
+Error from server (Forbidden): pods is forbidden: User "system:serviceaccount:default:vcluster-default-promise-pipeline" cannot list resources
+
+ClusterRole: vcluster-default-promise-pipeline 
+ServiceAccount: vcluster-default-promise-pipeline (default ns)
+
+```

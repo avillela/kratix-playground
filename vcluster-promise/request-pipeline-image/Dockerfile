@@ -14,9 +14,9 @@ COPY --from=lachlanevenson/k8s-kubectl:v1.25.4 /usr/local/bin/kubectl /usr/local
 # Install vcluster
 RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
 
+RUN echo "Hello"
 COPY *.yaml ./
 ADD vcluster-setup.sh vcluster-setup.sh
-RUN pwd
 
 CMD [ "sh", "-c", "./vcluster-setup.sh"]
 # ENTRYPOINT []
