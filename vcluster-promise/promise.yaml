@@ -912,9 +912,7 @@ spec:
           - emptyDir: {}
             name: cert-storage
   xaasRequestPipeline:
-  # - ghcr.io/avillela/vcluster-pipeline:dev@sha256:98af94a02e1a1503a2296b01df879661d7372acaf9a808aac33795188b7ebdf9
-  # - ghcr.io/avillela/vcluster-pipeline:dev@sha256:eafa6a3c11c2e3c4e2f009c9bdcde4f7f063551ca74e956d08b07695ee2aa399
-  - ghcr.io/avillela/vcluster-pipeline:dev@sha256:8b7b385679e34408521766f1ba09355fd67345c3db4dd05edf238f6c5df59e10
+  - ghcr.io/avillela/vcluster-pipeline:dev@sha256:829931042481b75e8f5f59ae0b9a4ee507f11c9d5b7b2b7d60ee4afd92842429
   xaasCrd:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition

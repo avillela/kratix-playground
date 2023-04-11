@@ -55,9 +55,12 @@ metadata:
   name: vcluster-namespace-default-role
   namespace: vcluster-namespace
 rules:
+  - apiGroups: ["apps"]
+    resources: ["*"]
+    verbs: ["*"]      
   - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "delete"]      
+    resources: ["*"]
+    verbs: ["*"]      
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -90,10 +93,10 @@ spec:
         command:
          - "/bin/bash"
          - "-c"
-         - "kubectl get secret vc-my-vcluster-demo -n vcluster-namespace --template={{.data.config}} | base64 -D > vcluster-config ; ls -al ; kubectl config --kubeconfig=vcluster-config use-context my-vcluster ; kubectl --kubeconfig=vcluster-config --context my-vcluster port-forward my-vcluster-demo -n vcluster-namespace 8443"
+        #  - "kubectl get secret vc-my-vcluster-demo -n vcluster-namespace --template={{.data.config}} | base64 -D > vcluster-config ; ls -al ; kubectl config --kubeconfig=vcluster-config use-context my-vcluster ; kubectl --kubeconfig=vcluster-config --context my-vcluster port-forward my-vcluster-demo -n vcluster-namespace 8443"
         #  - "echo bye!"
         #  - "ls -al"
-        #  - "./vcluster-setup.sh"
+         - "./vcluster-setup.sh"
         #  - "kubectl get pods -n vcluster-namespace"
         #  - "kubectl get secret vc-my-vcluster-demo -n vcluster-namespace --template={{.data.config}} | base64 -D"
         #  - "nohup vcluster connect my-vcluster-demo -n vcluster-namespace &>/dev/null &"
