@@ -1,0 +1,104 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: testing-stuff
+  namespace: vcluster-namespace
+spec:
+  template:
+    metadata:
+      name: testing-stuff
+    spec:
+      serviceAccountName: internal-kubectl
+      containers:
+      - name: tester
+        image: bitnami/kubectl:1.25
+        command:
+         - "bin/bash"
+         - "-c"
+         - "kubectl get pods -n vcluster-namespace ; ls -al ; pwd"
+      restartPolicy: Never 
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: internal-kubectl  
+  namespace: vcluster-namespace   
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: modify-pods
+  namespace: vcluster-namespace
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]      
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-pods-to-sa
+  namespace: vcluster-namespace
+subjects:
+  - kind: ServiceAccount
+    name: internal-kubectl
+roleRef:
+  kind: Role
+  name: modify-pods
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vcluster-namespace-default-role
+  namespace: vcluster-namespace
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]      
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcluster-namespace-default-rb
+  namespace: vcluster-namespace
+subjects:
+  - kind: ServiceAccount
+    name: default
+roleRef:
+  kind: Role
+  name: vcluster-namespace-default-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-vcluster
+  namespace: vcluster-namespace
+spec:
+  template:
+    metadata:
+      name: testing-stuff
+    spec:
+      # serviceAccountName: internal-kubectl
+      containers:
+      - name: tester
+        image: ghcr.io/avillela/vcluster-pipeline:dev@sha256:4f41c6af767b0b3ec6e37fb75d1108a4c76d29ddf849623255947aaedb6f32be
+        command:
+         - "/bin/bash"
+         - "-c"
+         - "kubectl get secret vc-my-vcluster-demo -n vcluster-namespace --template={{.data.config}} | base64 -D > vcluster-config ; ls -al ; kubectl config --kubeconfig=vcluster-config use-context my-vcluster ; kubectl --kubeconfig=vcluster-config --context my-vcluster port-forward my-vcluster-demo -n vcluster-namespace 8443"
+        #  - "echo bye!"
+        #  - "ls -al"
+        #  - "./vcluster-setup.sh"
+        #  - "kubectl get pods -n vcluster-namespace"
+        #  - "kubectl get secret vc-my-vcluster-demo -n vcluster-namespace --template={{.data.config}} | base64 -D"
+        #  - "nohup vcluster connect my-vcluster-demo -n vcluster-namespace &>/dev/null &"
+        #  - "vcluster list"
+        #  - "kubectl get pods"
+        #  - "echo hello!"
+      restartPolicy: Never 
+

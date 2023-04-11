@@ -106,7 +106,7 @@ kubectl --context $WORKER logs job/testing-stuff -n my-namespace
 docker build -t vcluster-pipeline:dev ./vcluster-promise/request-pipeline-image/
 
 # Test
-docker run -it --rm vcluster-pipeline:dev /bin/bash
+docker run -it --rm -v $PWD/vcluster-promise/request-pipeline-image/input:/input -v $PWD/vcluster-promise/request-pipeline-image/output:/output vcluster-pipeline:dev /bin/bash
 
 # Push
 docker buildx build --push -t ghcr.io/$GH_USER/vcluster-pipeline:dev --platform=linux/arm64,linux/amd64 ./vcluster-promise/request-pipeline-image/

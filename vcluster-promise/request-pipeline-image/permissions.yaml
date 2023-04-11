@@ -5,9 +5,12 @@ metadata:
   name: vcluster-default-promise-pipeline-role
   # namespace: default
 rules:
-  - apiGroups: ["*"]
+  - apiGroups: ["apps"]
     resources: ["*"]
-    verbs: ["*"]      
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["*"] 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -18,6 +21,12 @@ subjects:
   - kind: ServiceAccount
     name: vcluster-default-promise-pipeline
     namespace: opentelemetry
+  - kind: ServiceAccount
+    name: vcluster-default-promise-pipeline
+    namespace: default
+  - kind: ServiceAccount
+    name: vcluster-default-promise-pipeline
+    namespace: vcluster-namespace
 roleRef:
   kind: ClusterRole
   name: vcluster-default-promise-pipeline-role
