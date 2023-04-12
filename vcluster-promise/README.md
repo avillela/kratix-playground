@@ -109,7 +109,7 @@ docker build -t vcluster-pipeline:dev ./vcluster-promise/request-pipeline-image/
 docker run -it --rm -v $PWD/vcluster-promise/request-pipeline-image/input:/input -v $PWD/vcluster-promise/request-pipeline-image/output:/output vcluster-pipeline:dev /bin/bash
 
 # Push
-docker buildx build --push -t ghcr.io/$GH_USER/vcluster-pipeline:dev --platform=linux/arm64,linux/amd64 ./vcluster-promise/request-pipeline-image/
+docker buildx build --no-cache --push -t ghcr.io/$GH_USER/vcluster-pipeline:dev --platform=linux/arm64,linux/amd64 ./vcluster-promise/request-pipeline-image/
   
 ```
 

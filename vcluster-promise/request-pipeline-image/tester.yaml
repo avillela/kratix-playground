@@ -89,7 +89,7 @@ spec:
       # serviceAccountName: internal-kubectl
       containers:
       - name: tester
-        image: ghcr.io/avillela/vcluster-pipeline:dev@sha256:4f41c6af767b0b3ec6e37fb75d1108a4c76d29ddf849623255947aaedb6f32be
+        image: ghcr.io/avillela/vcluster-pipeline:dev
         command:
          - "/bin/bash"
          - "-c"
