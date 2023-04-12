@@ -23,5 +23,11 @@ kubectl --context $WORKER logs --selector=kratix-promise-id=vcluster-default --c
 
 kubectl --context $WORKER logs job/setup-vcluster -n vcluster-namespace
 
+kubectl get secret vc-my-vcluster-demo -n vcluster-namespace --template={{.data.config}} | base64 -D > vcluster-config
+
 # Ref: https://blog.devgenius.io/k8s-manage-multiple-clusters-using-kubectl-at-scale-9f200c692099
-kubectl config --kubeconfig=config-demo use-context dev-frontend
+kubectl config --kubeconfig=vcluster-config use-context my-vcluster
+
+kubectl --kubeconfig=vcluster-config port-forward my-vcluster-demo-0 -n test 8443
+
+kubectl --kubeconfig=vcluster-config --context my-vcluster get namespace
