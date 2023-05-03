@@ -1,0 +1,4 @@
+apiVersion: example.promise/v1
+kind: vcluster
+metadata:
+  name: my-vcluster
