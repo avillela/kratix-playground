@@ -69,7 +69,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
     EOF
     ```
 
-4. Define `workerClusterResources`
+4. Define `dependencies`
 
     First, download the OTel Collector CRD
 
@@ -81,8 +81,9 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
 
     ```bash
     # Download the resource builder tool
-    curl -sLo worker-resource-builder https://github.com/syntasso/kratix/releases/download/v0.0.1/worker-resource-builder-v0.0.0-1-darwin-arm64
-
+    curl -sLo worker-resource-builder.tar.gz https://github.com/syntasso/kratix/releases/download/v0.0.5/worker-resource-builder_0.0.5_darwin_arm64.tar.gz
+    tar -zxvf worker-resource-builder.tar.gz
+    mv worker-resource-builder-v0.0.5-darwin-arm64 worker-resource-builder
     chmod +x worker-resource-builder
 
     # Run the resource builder tool
@@ -101,7 +102,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
 
      set -x
 
-     cp /tmp/transfer/* /output/
+     cp /tmp/transfer/* /kratix/output/
    EOF
 
    chmod +x oteloperator-promise/request-pipeline-image/execute-pipeline.sh
@@ -129,7 +130,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
    Run container and examine the output
 
    ```bash
-   docker run -v $PWD/oteloperator-promise/request-pipeline-image/input:/input -v $PWD/oteloperator-promise/request-pipeline-image/output:/output oteloperator-request-pipeline:dev
+   docker run -v $PWD/oteloperator-promise/request-pipeline-image/input:/kratix/input -v $PWD/oteloperator-promise/request-pipeline-image/output:/kratix/output oteloperator-request-pipeline:dev
    ```
 
    Push to Docker registry
@@ -143,7 +144,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
     ```bash
     # Install dependent promise (Cert Manager)
     kubectl create -f https://raw.githubusercontent.com/syntasso/kratix-marketplace/main/cert-manager/promise.yaml
-    
+
     # Install OTel Collector Promise
     kubectl apply -f oteloperator-promise/promise.yaml
 
@@ -151,7 +152,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
     kubectl get promises
 
     # Check CRD installations
-    kubectl get crds --watch | grep otelcol
+    kubectl get crds --watch | grep oteloperator
 
     # Some other commands to make sure stuff works
     kubectl get pods --namespace kratix-platform-system
@@ -192,9 +193,9 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
    kubectl logs -l app=opentelemetry -n opentelemetry --follow
 
    # Promise request logs
-   kubectl logs --selector=kratix-promise-id=oteloperator-default --container status-writer
+   kubectl logs --selector=kratix-promise-id=oteloperator --container status-writer
 
-   kubectl logs --selector=kratix-promise-id=oteloperator-default --container xaas-request-pipeline-stage-1
+   kubectl logs --selector=kratix-promise-id=oteloperator --container oteloperator-configure-pipeline
    ```
 
 ## Cleanup
@@ -202,5 +203,5 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
 This will delete all namespaces, resources, and promise request.
 
 ```bash
-kubectl delete promise otelcol
+kubectl delete promise oteloperator
 ```
