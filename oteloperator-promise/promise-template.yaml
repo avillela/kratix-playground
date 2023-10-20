@@ -3,9 +3,11 @@ kind: Promise
 metadata:
   name: oteloperator
 spec:
-  workerClusterResources:
-  xaasRequestPipeline:
-  xaasCrd:
+  dependencies:
+  workflows:
+    resource:
+      configure: {}
+  api:
     apiVersion: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     metadata:

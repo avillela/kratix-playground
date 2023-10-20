@@ -2,4 +2,4 @@
 
 set -x
 
-cp /tmp/transfer/* /output/
+cp /tmp/transfer/* /kratix/output/
