@@ -1,4 +1,4 @@
-# OTel Operator for Jaeger
+# OTel Operator Promise (OTel Collector to Jaeger API)
 
 This creates and installs an OTel Operator configured to send traces to [Jaeger](https://jaegertracing.io). It also deploys a sample Go service so that you can test your connectivity.
 
@@ -29,9 +29,9 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
     metadata:
         name: oteloperator
     spec:
-        workerClusterResources:
-        xaasRequestPipeline:
-        xaasCrd:
+        dependencies:
+        workflows:
+        api:
     EOF
     ```
 
@@ -139,7 +139,27 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
    docker buildx build --push -t ghcr.io/$GH_USER/oteloperator-request-pipeline:dev --platform=linux/arm64,linux/amd64 ./oteloperator-promise/request-pipeline-image/
    ```
 
-6. Install the promise
+6. Define Promise Workflows using new pipeline:
+
+Create a workflow that runs each time a resource is requested or changed. Use the previously created pipeline image in the workflow:
+```bash
+cat << EOF | sed '/^    dependencies:$/ r /dev/stdin' test.yaml
+  workflows:
+    resource:
+      configure:
+        - apiVersion: platform.kratix.io/v1alpha1
+          kind: Pipeline
+          metadata:
+            name: resource-configure
+          spec:
+            containers:
+              - name: oteloperator-configure-pipeline
+                image: ghcr.io/avillela/oteloperator-request-pipeline:dev
+EOF
+```
+
+
+7. Install the promise
 
     ```bash
     # Install dependent promise (Cert Manager)
@@ -163,7 +183,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
     ./scripts/manager-logs.sh
     ```
 
-7. Request the resource
+8. Request the resource
 
    ```bash
    # Run the resource request
@@ -176,7 +196,7 @@ This creates and installs an OTel Operator configured to send traces to [Jaeger]
    ./scripts/flux-status.sh
    ```
 
-8. Verify
+9. Verify
 
    ```bash
    # Port-forwarding
